@@ -3,7 +3,6 @@ package controls;
 import java.time.Clock;
 import java.time.LocalDate;
 
-import db.interfaces.IEntity;
 import decorator.base.ControlDecorator;
 import javafx.scene.control.DatePicker;
 
@@ -24,18 +23,14 @@ public class MfDatePicker extends ControlDecorator<LocalDate> {
 		super.initialize();
 		_control.setOnAction((event) -> {
 			try {
-				_field.set(_entity, _field.getType().cast(getValue()));
+				LocalDate date = getValue();
+				_field.set(_entity, date);
+				runEvents(date);
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
 			runEvents(event);
 		});
-	}
-	
-	@Override
-	public void setEntity(IEntity entity) throws Exception {
-		super.setEntity(entity);
-		_control.setValue((LocalDate) _field.get(entity));
 	}
 	
 	@Override
@@ -49,7 +44,8 @@ public class MfDatePicker extends ControlDecorator<LocalDate> {
 	}
 
 	@Override
-	public void setValue(LocalDate value) {
+	public void setValue(LocalDate value) throws Exception {
+		super.setValue(value);
 		_control.setValue(value);
 	}
 }

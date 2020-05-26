@@ -1,6 +1,5 @@
 package controls;
 
-import db.interfaces.IEntity;
 import decorator.base.ControlDecorator;
 import javafx.scene.control.TextField;
 
@@ -22,7 +21,9 @@ public class MfTextField extends ControlDecorator<String> {
 		_control.focusedProperty().addListener((obs, oldVal, newVal) -> {
 			if (!newVal) {
 				try {
-					_field.set(_entity, getValue());
+					String nValue = getValue();
+					_field.set(_entity, nValue);
+					runEvents(nValue);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -31,12 +32,6 @@ public class MfTextField extends ControlDecorator<String> {
 		_control.setOnAction((event) -> {
 			runEvents(event);
 		});
-	}
-
-	@Override
-	public void setEntity(IEntity entity) throws Exception {
-		super.setEntity(entity);
-		_control.setText((String) _field.get(entity));
 	}
 
 	@Override
@@ -50,7 +45,8 @@ public class MfTextField extends ControlDecorator<String> {
 	}
 
 	@Override
-	public void setValue(String value) {
+	public void setValue(String value) throws Exception {
+		super.setValue(value);
 		_control.setText(value);
 	}
 }

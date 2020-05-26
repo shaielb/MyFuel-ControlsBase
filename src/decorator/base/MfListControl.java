@@ -16,7 +16,7 @@ public abstract class MfListControl<TType> extends ControlDecorator<TType> {
 	
 	protected Map<String, IEntity> _entitiesValuesMap = new HashMap<String, IEntity>();
 	protected Map<Integer, IEntity> _entitiesIdsMap = new HashMap<Integer, IEntity>();
-	protected Map<Integer, String> _entitiesIdsVsluesMap = new HashMap<Integer, String>();
+	protected Map<Integer, String> _entitiesIdsValuesMap = new HashMap<Integer, String>();
 
 	public void setEntities(List<IEntity> entities, String colTitle) throws Exception {
 		_entities = entities;
@@ -29,7 +29,7 @@ public abstract class MfListControl<TType> extends ControlDecorator<TType> {
 						String value = (String) field.get(entity);
 						_entitiesValuesMap.put(value, entity);
 						_entitiesIdsMap.put(entity.getId(), entity);
-						_entitiesIdsVsluesMap.put(entity.getId(), value);
+						_entitiesIdsValuesMap.put(entity.getId(), value);
 						values.add(value);
 					} catch (Exception e) {
 						e.printStackTrace();

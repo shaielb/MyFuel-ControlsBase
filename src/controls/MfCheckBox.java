@@ -1,6 +1,5 @@
 package controls;
 
-import db.interfaces.IEntity;
 import decorator.base.ControlDecorator;
 import javafx.scene.control.CheckBox;
 
@@ -11,7 +10,7 @@ public class MfCheckBox extends ControlDecorator<Boolean> {
 	public MfCheckBox() {
 		setControl(_control = new CheckBox());
 	}
-	
+
 	public MfCheckBox(CheckBox cb) {
 		setControl(_control = cb);
 	}
@@ -21,20 +20,16 @@ public class MfCheckBox extends ControlDecorator<Boolean> {
 		super.initialize();
 		_control.setOnAction((event) -> {
 			try {
-				_field.set(_entity, _field.getType().cast(getValue()));
+				Boolean newValue = getValue();
+				_field.set(_entity, newValue);
+				runEvents(newValue);
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();
 			}
 			runEvents(event);
 		});
 	}
-	
-	@Override
-	public void setEntity(IEntity entity) throws Exception {
-		super.setEntity(entity);
-		_control.setSelected((Boolean) _field.get(entity));
-	}
-	
+
 	@Override
 	public void clear() throws Exception {
 		_field.set(_entity, false);
@@ -46,7 +41,8 @@ public class MfCheckBox extends ControlDecorator<Boolean> {
 	}
 
 	@Override
-	public void setValue(Boolean value) {
+	public void setValue(Boolean value) throws Exception {
+		super.setValue(value);
 		_control.setSelected(value);
 	}
 }

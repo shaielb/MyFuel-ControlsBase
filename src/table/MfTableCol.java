@@ -6,58 +6,54 @@ import java.util.Map;
 
 import db.interfaces.IEntity;
 import decorator.base.ControlDecorator;
-import javafx.event.Event;
-import javafx.event.EventHandler;
 import javafx.scene.control.Control;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
+import javafx.scene.layout.Region;
 import javafx.util.Callback;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MfTableCol<TEntity extends IEntity, TType> extends TableColumn<TEntity, TType> {
 
-	private Map<Control, ControlDecorator> _controlsMap = new HashMap<Control, ControlDecorator>();
+	private Map<Region, ControlDecorator> _controlsMap = new HashMap<Region, ControlDecorator>();
 
 	public interface GetIndex {
 		Integer getIndex();
 	}
 
 	public interface ControlInstanciator {
-		ControlDecorator instanciate(GetIndex getIndex);
+		ControlDecorator instanciate(GetIndex getIndex) throws Exception;
 	}
-
-	private ColumnEvent<TEntity> _ce;
 
 	private ControlInstanciator _ci;
 
-	public MfTableCol(String title, ColumnEvent<TEntity> ce) {
-		this(title, ce, null);
-	}
-
-	public MfTableCol(String title, ColumnEvent<TEntity> ce, ControlInstanciator ci) {
+	public MfTableCol(String title) {
 		super(title);
-		_ce = ce;
-		_ci = ci;
 
 		Callback<TableColumn<TEntity, TType>, TableCell<TEntity, TType>> cellFactory = new Callback<TableColumn<TEntity, TType>, TableCell<TEntity, TType>>() {
 			@Override
 			public TableCell<TEntity, TType> call(final TableColumn<TEntity, TType> param) {
-				final TableCell<TEntity, TType> cell = new TableCell<TEntity, TType>() {
+				TableCell<TEntity, TType> cell = null;
+				try {
+					cell = new TableCell<TEntity, TType>() {
 
-					private final ControlDecorator _control = _ci.instanciate(() -> getIndex());
+						private final ControlDecorator _control = _ci.instanciate(() -> getIndex());
 
-					@Override
-					public void updateItem(TType item, boolean empty) {
-						super.updateItem(item, empty);
-						if (empty) {
-							setGraphic(null);
-						} else {
-							_controlsMap.put(_control.getInstance(), _control);
-							setGraphic(_control.getInstance());
-							updateCellItem(_control, getIndex());
+						@Override
+						public void updateItem(TType item, boolean empty) {
+							super.updateItem(item, empty);
+							if (empty) {
+								setGraphic(null);
+							} else {
+								_controlsMap.put(_control.getInstance(), _control);
+								setGraphic(_control.getInstance());
+								updateCellItem(_control, getIndex());
+							}
 						}
-					}
-				};
+					};
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 
 				return cell;
 			}
@@ -82,24 +78,10 @@ public class MfTableCol<TEntity extends IEntity, TType> extends TableColumn<TEnt
 		}
 	}
 
-	public <TEvent extends Event> EventHandler<TEvent> getEventHandler(GetIndex getIndex) {
-		return (event) -> {
-			ControlDecorator control = (ControlDecorator) _controlsMap.get(event.getSource());
-			Object newValue = control.getValue();
-			TEntity entity = getTableView().getItems().get(getIndex.getIndex());
-			try {
-				control.getField().set(entity, newValue);
-				_ce.execute(entity, control);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		};
-	}
-
 	public void setCi(ControlInstanciator ci) {
 		_ci = ci;
 	}
-	
+
 	public ControlDecorator getDecorator(Control control) {
 		return _controlsMap.get(control);
 	}

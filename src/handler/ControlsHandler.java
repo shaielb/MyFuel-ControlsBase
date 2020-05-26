@@ -20,9 +20,6 @@ import controls.MfTextField;
 import db.interfaces.IEntity;
 import decorator.base.ControlDecorator;
 import globals.Globals;
-import javafx.event.Event;
-import javafx.event.EventHandler;
-import javafx.scene.control.Control;
 import javafx.scene.control.TableColumn;
 import table.ColumnEvent;
 import table.MfTableCol;
@@ -44,35 +41,29 @@ public class ControlsHandler {
 		Field field = control.getField();
 		String title = StringUtil.getTitle(control.getColumnName());
 
-		MfTableCol<TEntity, ?> column = new MfTableCol(title, ce);
+		MfTableCol<TEntity, ?> column = new MfTableCol(title);
 		column.setCi((getIndex) -> {
 			{
 				ControlDecorator cd = ControlsHandler.createControl(field);
 				cd.addEvent((event) -> {
-					column.getEventHandler(getIndex);
+					Object newValue = cd.getValue();
+					TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
+					try {
+						control.getField().set(entity, newValue);
+						ce.execute(entity, control);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
 				});
+				return cd;
 			}
-			return control;
 		});
 		return column;
 	}
 
 	public static <TEntity extends IEntity> TableColumn createButtonColumn(ButtonTitle bt, String title, ColumnEvent<TEntity> ce) {
-		MfTableCol<TEntity, ?> column = new MfTableCol<TEntity, String>(title, ce) {
-			private MfTableCol<TEntity, ?> _colInstance = this;
-
-			@Override
-			public <TEvent extends Event> EventHandler<TEvent> getEventHandler(GetIndex getIndex) {
-				return (event) -> {
-					TEntity entity = getTableView().getItems().get(getIndex.getIndex());
-					try {
-						ce.execute(entity, _colInstance.getDecorator((Control) event.getSource()));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				};
-			}
-		};
+		MfTableCol<TEntity, ?> column = new MfTableCol<TEntity, String>(title);
 		column.setCi((getIndex) -> {
 			String btnTitle = title;
 			if (bt != null) {
@@ -82,7 +73,14 @@ public class ControlsHandler {
 			MfButton button = new MfButton(btnTitle);
 			{
 				button.addEvent((event) -> {
-					column.getEventHandler(getIndex);
+					Object newValue = button.getValue();
+					TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
+					try {
+						button.getField().set(entity, newValue);
+						ce.execute(entity, button);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
 				});
 			}
 			return button;
@@ -94,7 +92,7 @@ public class ControlsHandler {
 		return createButtonColumn(null, title, ce);
 	}
 
-	public static <TEntity extends IEntity> ControlDecorator createControl(Field field) {
+	public static <TEntity extends IEntity> ControlDecorator createControl(Field field) throws Exception {
 		Class<?> classType = field.getType();
 		String colName = field.getAnnotation(Column.class).Name();
 		ControlDecorator control = null;
@@ -110,11 +108,18 @@ public class ControlsHandler {
 		else if (Date.class.isAssignableFrom(classType)) {
 			control = new MfDatePicker();
 		}
-		else if (colName.endsWith("_fk")) {
-			Table fkTable = field.getAnnotation(Table.class);
-			if (fkTable.Name().endsWith("_enum")) {
-				control = new MfComboBox();
+		else if (colName.endsWith("_enum_fk")) {
+			control = new MfComboBox();
+			String fkTableName = field.getAnnotation(Table.class).Name();
+			Map<String, List<IEntity>> enumTablesMap = (Map<String, List<IEntity>>) Cache.get(Globals.EnumTables);
+			if (enumTablesMap == null) {
+				Cache.put(Globals.EnumTables, enumTablesMap = new HashMap<String, List<IEntity>>());
 			}
+			List<IEntity> tableEntities = enumTablesMap.get(fkTableName);
+			if (tableEntities == null) {
+				throw new Exception(String.format("%s was not populated from server", fkTableName));
+			}
+			((MfComboBox) control).setEntities(tableEntities, "title");
 		}
 		if (control != null) {
 			control.setField(field);
@@ -138,19 +143,6 @@ public class ControlsHandler {
 			ControlDecorator control = ControlsHandler.createControl(field);
 			controlsMap.put(index, control);
 			control.setColumnName(colName);
-
-			if (colName.endsWith("_enum_fk")) {
-				String fkTableName = field.getAnnotation(Table.class).Name();
-				Map<String, List<IEntity>> enumTablesMap = (Map<String, List<IEntity>>) Cache.get(Globals.EnumTables);
-				if (enumTablesMap == null) {
-					Cache.put(Globals.EnumTables, enumTablesMap = new HashMap<String, List<IEntity>>());
-				}
-				List<IEntity> tableEntities = enumTablesMap.get(fkTableName);
-				if (tableEntities == null) {
-					throw new Exception(String.format("%s was not populated from server", fkTableName));
-				}
-				((MfComboBox) control).setEntities(tableEntities, "title");
-			}
 		});
 		for (Entry<Integer, ControlDecorator> entry: controlsMap.entrySet()) {
 			ControlDecorator cd = entry.getValue();

@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.interfaces.IEntity;
-import javafx.event.ActionEvent;
 import javafx.scene.control.Control;
+import javafx.scene.layout.Region;
 
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes", "unchecked", "hiding" })
 public abstract class ControlDecorator<TType> {
 
 	public interface ControlEvent<T> {
@@ -32,18 +32,22 @@ public abstract class ControlDecorator<TType> {
 			controlEvent.handle(newValue);
 		}
 	}
-	
-	protected void runEvents(ActionEvent event) {
-		for (ControlEvent<ActionEvent> controlEvent: _events) {
-			controlEvent.handle(event);
+
+	protected <TType> void runEvents(TType newValue) {
+		for (ControlEvent<TType> controlEvent: _events) {
+			controlEvent.handle(newValue);
 		}
 	}
-	
+
 	public abstract void clear() throws Exception;
 
 	public abstract TType getValue();	
 
-	public abstract void setValue(TType value) throws Exception;
+	public void setValue(TType value) throws Exception {
+		if (_field != null && _entity != null) {
+			_field.set(_entity, value);
+		}
+	}
 
 	public void setControl(Control control) {
 		_control = control;
@@ -52,6 +56,9 @@ public abstract class ControlDecorator<TType> {
 
 	public void setEntity(IEntity entity) throws Exception {
 		_entity = entity;
+		if (_field != null) {
+			setValue((TType) _field.get(_entity));
+		}
 	}
 
 	public void setField(Field field) {
@@ -70,7 +77,7 @@ public abstract class ControlDecorator<TType> {
 		return _columnName;
 	}
 
-	public Control getInstance() {
+	public Region getInstance() {
 		return _control;
 	}
 

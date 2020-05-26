@@ -24,6 +24,7 @@ public class MfComboBox extends MfListControl<Object> {
 		_control.setOnAction((event) -> {
 					try {
 						_field.set(_entity, _entitiesValuesMap.get(getValue()));
+						runEvents(getValue());
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -31,14 +32,8 @@ public class MfComboBox extends MfListControl<Object> {
 				});
 	}
 	
-	@Override
-	public void setEntity(IEntity entity) throws Exception {
-		super.setEntity(entity);
-		setSelectedItem((IEntity) _field.get(entity));
-	}
-	
 	private void setSelectedItem(IEntity entity) throws Exception {
-		_control.setValue((entity == null) ? "" : _entitiesIdsVsluesMap.get(entity.getId()));
+		_control.setValue((entity == null) ? "" : _entitiesIdsValuesMap.get(entity.getId()));
 		_field.set(_entity, entity);
 	}
 	

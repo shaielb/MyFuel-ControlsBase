@@ -2,14 +2,22 @@ package controls;
 
 import db.interfaces.IEntity;
 import decorator.base.ControlDecorator;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.Region;
 
 public class MfNumberField extends ControlDecorator<Number> {
 
 	private interface Cast {
 		Number cast();
 	}
+
+	private Label _infoLbl = new Label();
+	private BorderPane _wrapper = new BorderPane();
 
 	private TextField _control;
 
@@ -31,53 +39,31 @@ public class MfNumberField extends ControlDecorator<Number> {
 	protected void initialize() {
 		super.initialize();
 		establishType(_numberType);
-		_control.setOnKeyPressed(event ->  {
-			String codeString = event.getCode().toString();
-			if (!codeString.toLowerCase().startsWith("digit") && 
-					!codeString.toLowerCase().equals("back_space")) {
-				_control.setPromptText("Please Enter A Number");
-				event.consume();
-				ObservableList<String> styleClass = _control.getStyleClass();
-				if (!styleClass.contains("error")) {
-					styleClass.add("error");
-				}
-			}
-			else {
-				ObservableList<String> styleClass = _control.getStyleClass();
-				if (styleClass.contains("error")) {
-					styleClass.remove("error");
-				}
-			}
-			String currText = _control.getText();
-			if (currText.length() > 0 && !currText.matches("\\d+")) {
-				_control.setText(currText.substring(0, currText.length() - 1));
-				_control.requestFocus();
-				_control.end();
-			}
-		});
+		_infoLbl.setId("error-label");
+		_infoLbl.setText("Only Numbers Please");
 
-		_control.focusedProperty().addListener((obs, oldVal, newVal) -> {
-			String currText = _control.getText();
-			if (currText.length() > 0) {
-				if (!newVal) {
-					if (_control.getText().matches("\\d+")) {
-						try {
-							_field.set(_entity, getValue());
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+		_wrapper.setCenter(_control);
+		_control.textProperty().addListener(new ChangeListener<String>() {
+		    @Override
+		    public void changed(ObservableValue<? extends String> observable, 
+		    		String oldValue, String newValue) {
+		        if (!newValue.matches("\\d*")) {
+		        	_control.setText(newValue.replaceAll("[^\\d]", ""));
+		        	ObservableList<String> styleClass = _control.getStyleClass();
+					if (!styleClass.contains("error")) {
+						styleClass.add("error");
+						_wrapper.setTop(_infoLbl);
 					}
-				}
-			}
-		});
-
-		_control.setOnAction((event) -> {
-			try {
-				_field.set(_entity, _field.getType().cast(getValue()));
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				e.printStackTrace();
-			}
-			runEvents(event);
+		        }
+		        else {
+		        	ObservableList<String> styleClass = _control.getStyleClass();
+					if (styleClass.contains("error")) {
+						styleClass.remove("error");
+						_wrapper.setTop(null);
+					}
+					runEvents(newValue);
+		        }
+		    }
 		});
 	}
 
@@ -106,8 +92,13 @@ public class MfNumberField extends ControlDecorator<Number> {
 	}
 
 	@Override
+	public Region getInstance() {
+		return _wrapper;
+	}
+
+	@Override
 	public void setEntity(IEntity entity) throws Exception {
-		super.setEntity(entity);
+		_entity = entity;
 		Object value = _field.get(entity);
 		_control.setText(value == null ? "" : value.toString());
 	}
@@ -123,7 +114,8 @@ public class MfNumberField extends ControlDecorator<Number> {
 	}
 
 	@Override
-	public void setValue(Number value) {
+	public void setValue(Number value) throws Exception {
+		super.setValue(value);
 		_control.setText(value.toString());
 	}
 }
