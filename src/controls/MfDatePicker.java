@@ -3,10 +3,10 @@ package controls;
 import java.time.Clock;
 import java.time.LocalDate;
 
-import decorator.base.ControlDecorator;
+import adapter.base.ControlAdapter;
 import javafx.scene.control.DatePicker;
 
-public class MfDatePicker extends ControlDecorator<LocalDate> {
+public class MfDatePicker extends ControlAdapter<LocalDate> {
 
 	private DatePicker _control;
 

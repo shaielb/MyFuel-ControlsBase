@@ -1,17 +1,17 @@
 package controls;
 
 import adapter.base.ControlAdapter;
-import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
 
-public class MfTextField extends ControlAdapter<String> {
+public class MfPasswordField extends ControlAdapter<String> {
 
-	private TextField _control;
+	private PasswordField _control;
 
-	public MfTextField() {
-		setControl(_control = new TextField());
+	public MfPasswordField() {
+		setControl(_control = new PasswordField());
 	}
 
-	public MfTextField(TextField tf) {
+	public MfPasswordField(PasswordField tf) {
 		setControl(_control = tf);
 	}
 

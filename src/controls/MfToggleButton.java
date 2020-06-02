@@ -2,21 +2,21 @@ package controls;
 
 import adapter.base.ControlAdapter;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
+import javafx.scene.control.ToggleButton;
 
 @SuppressWarnings({ "unchecked" })
-public class MfButton extends ControlAdapter<String> {
+public class MfToggleButton extends ControlAdapter<Boolean> {
 
-	private Button _control;
+	private ToggleButton _control;
 
-	public MfButton(String title) {
-		setControl(_control = new Button(title));
+	public MfToggleButton(String title) {
+		setControl(_control = new ToggleButton(title));
 	}
-	
-	public MfButton(Button batton) {
+
+	public MfToggleButton(ToggleButton batton) {
 		setControl(_control = batton);
 	}
-	
+
 	@Override
 	protected void initialize() {
 		super.initialize();
@@ -26,16 +26,19 @@ public class MfButton extends ControlAdapter<String> {
 			}
 		});
 	}
-	
+
 	@Override
 	public void clear() {}
 
+	public Boolean getValue() {
+		return _control.isSelected();
+	}
+	
 	@Override
-	public String getValue() {
-		return _control.getText();
+	public void setValue(Boolean value) {
+		_control.setSelected(value);
 	}
 
-	@Override
 	public void setValue(String value) {
 		_control.setText(value);
 	}

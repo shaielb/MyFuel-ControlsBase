@@ -4,25 +4,25 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
+import adapter.base.ControlAdapter;
 import db.interfaces.IEntity;
-import decorator.base.ControlDecorator;
+import javafx.scene.Node;
 import javafx.scene.control.Control;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.layout.Region;
 import javafx.util.Callback;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class MfTableCol<TEntity extends IEntity, TType> extends TableColumn<TEntity, TType> {
 
-	private Map<Region, ControlDecorator> _controlsMap = new HashMap<Region, ControlDecorator>();
+	private Map<Node, ControlAdapter> _controlsMap = new HashMap<Node, ControlAdapter>();
 
 	public interface GetIndex {
 		Integer getIndex();
 	}
 
 	public interface ControlInstanciator {
-		ControlDecorator instanciate(GetIndex getIndex) throws Exception;
+		ControlAdapter instanciate(GetIndex getIndex) throws Exception;
 	}
 
 	private ControlInstanciator _ci;
@@ -37,7 +37,7 @@ public class MfTableCol<TEntity extends IEntity, TType> extends TableColumn<TEnt
 				try {
 					cell = new TableCell<TEntity, TType>() {
 
-						private final ControlDecorator _control = _ci.instanciate(() -> getIndex());
+						private final ControlAdapter _control = _ci.instanciate(() -> getIndex());
 
 						@Override
 						public void updateItem(TType item, boolean empty) {
@@ -62,7 +62,7 @@ public class MfTableCol<TEntity extends IEntity, TType> extends TableColumn<TEnt
 		setCellFactory(cellFactory);
 	}
 
-	protected void updateCellItem(ControlDecorator control, int index) {
+	protected void updateCellItem(ControlAdapter control, int index) {
 		try {
 			Field field = control.getField();
 			TEntity entity = getTableView().getItems().get(index);
@@ -82,7 +82,7 @@ public class MfTableCol<TEntity extends IEntity, TType> extends TableColumn<TEnt
 		_ci = ci;
 	}
 
-	public ControlDecorator getDecorator(Control control) {
+	public ControlAdapter getAdapter(Control control) {
 		return _controlsMap.get(control);
 	}
 }

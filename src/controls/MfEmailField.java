@@ -1,6 +1,6 @@
 package controls;
 
-import decorator.base.ControlDecorator;
+import adapter.base.ControlAdapter;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -8,7 +8,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 
-public class MfEmailField extends ControlDecorator<String> {
+public class MfEmailField extends ControlAdapter<String> {
 
 	private Label _infoLbl = new Label();
 	private BorderPane _wrapper = new BorderPane();

@@ -1,4 +1,4 @@
-package decorator.base;
+package adapter.base;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,7 +8,7 @@ import java.util.Map;
 import db.interfaces.IEntity;
 import handler.ControlsHandler;
 
-public abstract class MfListControl<TType> extends ControlDecorator<TType> {
+public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 
 	public static final String NoSelection = "-";
 	

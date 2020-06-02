@@ -2,21 +2,21 @@ package controls;
 
 import adapter.base.ControlAdapter;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
 
 @SuppressWarnings({ "unchecked" })
-public class MfButton extends ControlAdapter<String> {
+public class MfHyperlink extends ControlAdapter<String> {
 
-	private Button _control;
+	private Hyperlink _control;
 
-	public MfButton(String title) {
-		setControl(_control = new Button(title));
+	public MfHyperlink(String title) {
+		setControl(_control = new Hyperlink(title));
 	}
-	
-	public MfButton(Button batton) {
-		setControl(_control = batton);
+
+	public MfHyperlink(Hyperlink hl) {
+		setControl(_control = hl);
 	}
-	
+
 	@Override
 	protected void initialize() {
 		super.initialize();
@@ -26,7 +26,7 @@ public class MfButton extends ControlAdapter<String> {
 			}
 		});
 	}
-	
+
 	@Override
 	public void clear() {}
 

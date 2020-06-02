@@ -1,21 +1,20 @@
-package decorator.base;
+package adapter.base;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 import db.interfaces.IEntity;
-import javafx.scene.control.Control;
-import javafx.scene.layout.Region;
+import javafx.scene.Node;
 
 @SuppressWarnings({ "rawtypes", "unchecked", "hiding" })
-public abstract class ControlDecorator<TType> {
+public abstract class ControlAdapter<TType> {
 
 	public interface ControlEvent<T> {
 		void handle(T value);
 	}
 
-	private Control _control;
+	private Node _control;
 
 	protected IEntity _entity;
 
@@ -39,6 +38,12 @@ public abstract class ControlDecorator<TType> {
 		}
 	}
 
+	public void update() throws Exception {
+		if (_field != null && _entity != null) {
+			setValue((TType) _field.get(_entity));
+		}
+	}
+
 	public abstract void clear() throws Exception;
 
 	public abstract TType getValue();	
@@ -49,20 +54,19 @@ public abstract class ControlDecorator<TType> {
 		}
 	}
 
-	public void setControl(Control control) {
+	public void setControl(Node control) {
 		_control = control;
 		initialize();
 	}
 
 	public void setEntity(IEntity entity) throws Exception {
 		_entity = entity;
-		if (_field != null) {
-			setValue((TType) _field.get(_entity));
-		}
+		update();
 	}
 
 	public void setField(Field field) {
 		_field = field;
+		_field.setAccessible(true);
 	}
 
 	public Field getField() {
@@ -77,7 +81,7 @@ public abstract class ControlDecorator<TType> {
 		return _columnName;
 	}
 
-	public Region getInstance() {
+	public Node getInstance() {
 		return _control;
 	}
 

@@ -1,9 +1,9 @@
 package controls;
 
-import decorator.base.ControlDecorator;
+import adapter.base.ControlAdapter;
 import javafx.scene.control.Slider;
 
-public class MfSlider extends ControlDecorator<Double> {
+public class MfSlider extends ControlAdapter<Double> {
 
 	private Slider _control;
 

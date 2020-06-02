@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import adapter.base.ControlAdapter;
+
 import java.util.TreeMap;
 
 import annotations.Column;
@@ -18,8 +21,11 @@ import controls.MfDatePicker;
 import controls.MfNumberField;
 import controls.MfTextField;
 import db.interfaces.IEntity;
-import decorator.base.ControlDecorator;
+import db.services.Services;
 import globals.Globals;
+import javafx.scene.Node;
+import javafx.scene.Scene;
+import javafx.scene.control.Control;
 import javafx.scene.control.TableColumn;
 import table.ColumnEvent;
 import table.MfTableCol;
@@ -37,14 +43,14 @@ public class ControlsHandler {
 		public void iterate(Field field, String columnName, Integer columnIndex) throws Exception;
 	}
 
-	public static <TEntity extends IEntity> TableColumn createColumn(ControlDecorator control, ColumnEvent<TEntity> ce) {
+	public static <TEntity extends IEntity> TableColumn createColumn(ControlAdapter control, ColumnEvent<TEntity> ce) {
 		Field field = control.getField();
 		String title = StringUtil.getTitle(control.getColumnName());
 
 		MfTableCol<TEntity, ?> column = new MfTableCol(title);
 		column.setCi((getIndex) -> {
 			{
-				ControlDecorator cd = ControlsHandler.createControl(field);
+				ControlAdapter cd = ControlsHandler.createControl(field);
 				cd.addEvent((event) -> {
 					Object newValue = cd.getValue();
 					TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
@@ -92,10 +98,10 @@ public class ControlsHandler {
 		return createButtonColumn(null, title, ce);
 	}
 
-	public static <TEntity extends IEntity> ControlDecorator createControl(Field field) throws Exception {
+	public static <TEntity extends IEntity> ControlAdapter createControl(Field field) throws Exception {
 		Class<?> classType = field.getType();
 		String colName = field.getAnnotation(Column.class).Name();
-		ControlDecorator control = null;
+		ControlAdapter control = null;
 		if (Boolean.class.isAssignableFrom(classType)) {
 			control = new MfCheckBox();
 		}
@@ -135,23 +141,35 @@ public class ControlsHandler {
 		return columnsNum[0];
 	}*/
 
-	public static <TEntity extends IEntity> Map<String, ControlDecorator> createEntityControls(Class<TEntity> entityClass) throws Exception {
-		Map<String, ControlDecorator> map = new LinkedHashMap<String, ControlDecorator>();
-		Map<Integer, ControlDecorator> controlsMap = new TreeMap<Integer, ControlDecorator>();
+	public static <TEntity extends IEntity> Map<String, ControlAdapter> createEntityControls(Class<TEntity> entityClass) throws Exception {
+		Map<String, ControlAdapter> map = new LinkedHashMap<String, ControlAdapter>();
+		Map<Integer, ControlAdapter> controlsMap = new TreeMap<Integer, ControlAdapter>();
 
 		iterateFields(entityClass, (field, colName, index) -> {
-			ControlDecorator control = ControlsHandler.createControl(field);
+			ControlAdapter control = ControlsHandler.createControl(field);
 			controlsMap.put(index, control);
 			control.setColumnName(colName);
 		});
-		for (Entry<Integer, ControlDecorator> entry: controlsMap.entrySet()) {
-			ControlDecorator cd = entry.getValue();
+		for (Entry<Integer, ControlAdapter> entry: controlsMap.entrySet()) {
+			ControlAdapter cd = entry.getValue();
 			map.put(cd.getColumnName(), cd);
 		}
 		return map;
 	}
 
-	public static <TEntity extends IEntity> void iterateFields(Class<TEntity> entityClass, FieldsIterator iterator) throws Exception {
+	public static Map<String, Control> collectControlsByIds(Scene scene, String table) throws Exception {
+		IEntity entity = Services.createEntity(table);
+		Map<String, Control> map = new HashMap<String, Control>();
+		ControlsHandler.iterateFields(entity.getClass(), (field, colName, index) -> {
+			Node node = scene.lookup("#" + colName);
+			if (node != null) {
+				map.put(colName, (Control) node);
+			}
+		});
+		return map;
+	}
+
+	public static void iterateFields(Class<?> entityClass, FieldsIterator iterator) throws Exception {
 		Field[] fields = entityClass.getDeclaredFields();
 
 		for (Field field : fields) {

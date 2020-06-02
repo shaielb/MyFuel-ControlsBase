@@ -1,7 +1,7 @@
 package controls;
 
+import adapter.base.ControlAdapter;
 import db.interfaces.IEntity;
-import decorator.base.ControlDecorator;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -10,7 +10,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
 
-public class MfNumberField extends ControlDecorator<Number> {
+public class MfNumberField extends ControlAdapter<Number> {
 
 	private interface Cast {
 		Number cast();

@@ -1,20 +1,20 @@
 package controls;
 
 import adapter.base.ControlAdapter;
-import javafx.scene.control.CheckBox;
+import javafx.scene.control.RadioButton;
 
-public class MfCheckBox extends ControlAdapter<Boolean> {
+public class MfRadioButton extends ControlAdapter<Boolean> {
 
 	private String _validValue;
 	
-	private CheckBox _control;
+	private RadioButton _control;
 
-	public MfCheckBox() {
-		setControl(_control = new CheckBox());
+	public MfRadioButton() {
+		setControl(_control = new RadioButton());
 	}
 
-	public MfCheckBox(CheckBox cb) {
-		setControl(_control = cb);
+	public MfRadioButton(RadioButton rb) {
+		setControl(_control = rb);
 	}
 
 	@Override

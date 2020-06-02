@@ -1,9 +1,9 @@
 package controls;
 
-import decorator.base.ControlDecorator;
+import adapter.base.ControlAdapter;
 import javafx.scene.control.ProgressBar;
 
-public class MfProgressBar extends ControlDecorator<Double> {
+public class MfProgressBar extends ControlAdapter<Double> {
 
 	private ProgressBar _control;
 

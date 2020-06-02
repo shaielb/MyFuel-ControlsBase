@@ -1,9 +1,9 @@
 package controls;
 
-import decorator.base.ControlDecorator;
+import adapter.base.ControlAdapter;
 import javafx.scene.control.Label;
 
-public class MfLabel extends ControlDecorator<Object> {
+public class MfLabel extends ControlAdapter<Object> {
 
 	private Label _control;
 

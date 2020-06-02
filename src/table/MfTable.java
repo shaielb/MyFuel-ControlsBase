@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import adapter.base.ControlAdapter;
 import db.interfaces.IEntity;
-import decorator.base.ControlDecorator;
 import handler.ControlsHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,11 +36,11 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 		setAppearance();
 		_table.setItems(_tvObservableList);
 
-		Map<String, ControlDecorator> map = ControlsHandler.createEntityControls(_entityClass);
+		Map<String, ControlAdapter> map = ControlsHandler.createEntityControls(_entityClass);
 
 		List<TableColumn<TEntity, ?>> columns = new ArrayList<TableColumn<TEntity, ?>>();
-		for (Entry<String, ControlDecorator> entry : map.entrySet()) {
-			ControlDecorator control = entry.getValue();
+		for (Entry<String, ControlAdapter> entry : map.entrySet()) {
+			ControlAdapter control = entry.getValue();
 			columns.add(ControlsHandler.createColumn(control, (entity, eventControl) -> {
 				control.setEntity(entity);
 				_onCellControlAction.execute((TEntity) entity, eventControl);
@@ -68,7 +68,7 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 		setCenter(sp);
 	}
 
-	public void addColumn(ControlDecorator control, ColumnEvent<TEntity> event) {
+	public void addColumn(ControlAdapter control, ColumnEvent<TEntity> event) {
 		addColumn(ControlsHandler.createColumn(control, event));
 	}
 

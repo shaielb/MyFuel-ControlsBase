@@ -2,8 +2,8 @@ package controls;
 
 import java.util.List;
 
+import adapter.base.MfListControl;
 import db.interfaces.IEntity;
-import decorator.base.MfListControl;
 import javafx.scene.control.ComboBox;
 
 public class MfComboBox extends MfListControl<Object> {
