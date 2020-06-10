@@ -2,9 +2,7 @@ package controls;
 
 import adapter.base.ControlAdapter;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 
-@SuppressWarnings({ "unchecked" })
 public class MfImageView extends ControlAdapter<String> {
 
 	private ImageView _control;
@@ -21,9 +19,7 @@ public class MfImageView extends ControlAdapter<String> {
 	protected void initialize() {
 		super.initialize();
 		_control.setOnMouseClicked((event) -> {
-			for (ControlEvent<MouseEvent> controlEvent: _events) {
-				controlEvent.handle(event);
-			}
+			runEvents(event);
 		});
 	}
 

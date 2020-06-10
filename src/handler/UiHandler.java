@@ -2,6 +2,8 @@ package handler;
 
 import java.lang.reflect.Field;
 import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,11 +22,15 @@ import controls.MfComboBox;
 import controls.MfDatePicker;
 import controls.MfNumberField;
 import controls.MfTextField;
+import controls.MfTimeField;
 import db.interfaces.IEntity;
 import db.services.Services;
 import globals.Globals;
+import javafx.application.Platform;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Control;
 import javafx.scene.control.TableColumn;
 import table.ColumnEvent;
@@ -33,24 +39,36 @@ import utilities.Cache;
 import utilities.StringUtil;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class ControlsHandler {
+public class UiHandler {
 
+	public interface RunOnUi {
+		public void run();
+	}
+	
 	public interface ButtonTitle {
 		public String set(IEntity entity);
+	}
+	
+	public interface ControlInstantiator {
+		public ControlAdapter create() throws Exception;
 	}
 
 	public interface FieldsIterator {
 		public void iterate(Field field, String columnName, Integer columnIndex) throws Exception;
 	}
-
+	
 	public static <TEntity extends IEntity> TableColumn createColumn(ControlAdapter control, ColumnEvent<TEntity> ce) {
 		Field field = control.getField();
+		return createColumn(control, () -> { return UiHandler.createControl(field); }, ce);
+	}
+
+	public static <TEntity extends IEntity> TableColumn createColumn(ControlAdapter control, ControlInstantiator instantiator, ColumnEvent<TEntity> ce) {
 		String title = StringUtil.getTitle(control.getColumnName());
 
 		MfTableCol<TEntity, ?> column = new MfTableCol(title);
 		column.setCi((getIndex) -> {
 			{
-				ControlAdapter cd = ControlsHandler.createControl(field);
+				ControlAdapter cd = instantiator.create();
 				cd.addEvent((event) -> {
 					Object newValue = cd.getValue();
 					TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
@@ -114,6 +132,12 @@ public class ControlsHandler {
 		else if (Date.class.isAssignableFrom(classType)) {
 			control = new MfDatePicker();
 		}
+		else if (Timestamp.class.isAssignableFrom(classType)) {
+			control = new MfDatePicker();
+		}
+		else if (Time.class.isAssignableFrom(classType)) {
+			control = new MfTimeField();
+		}
 		else if (colName.endsWith("_enum_fk")) {
 			control = new MfComboBox();
 			String fkTableName = field.getAnnotation(Table.class).Name();
@@ -125,7 +149,7 @@ public class ControlsHandler {
 			if (tableEntities == null) {
 				throw new Exception(String.format("%s was not populated from server", fkTableName));
 			}
-			((MfComboBox) control).setEntities(tableEntities, "title");
+			((MfComboBox) control).setEntities(tableEntities, "_key");
 		}
 		if (control != null) {
 			control.setField(field);
@@ -146,7 +170,7 @@ public class ControlsHandler {
 		Map<Integer, ControlAdapter> controlsMap = new TreeMap<Integer, ControlAdapter>();
 
 		iterateFields(entityClass, (field, colName, index) -> {
-			ControlAdapter control = ControlsHandler.createControl(field);
+			ControlAdapter control = UiHandler.createControl(field);
 			controlsMap.put(index, control);
 			control.setColumnName(colName);
 		});
@@ -158,9 +182,9 @@ public class ControlsHandler {
 	}
 
 	public static Map<String, Control> collectControlsByIds(Scene scene, String table) throws Exception {
-		IEntity entity = Services.createEntity(table);
+		IEntity entity = Services.getBridge(table).createEntity();
 		Map<String, Control> map = new HashMap<String, Control>();
-		ControlsHandler.iterateFields(entity.getClass(), (field, colName, index) -> {
+		UiHandler.iterateFields(entity.getClass(), (field, colName, index) -> {
 			Node node = scene.lookup("#" + colName);
 			if (node != null) {
 				map.put(colName, (Control) node);
@@ -183,6 +207,23 @@ public class ControlsHandler {
 				}
 			}
 		}
+	}
+	
+	public static void showAlert(AlertType at, String title, String header, String body) {
+		Alert alert = new Alert(at);
+		alert.setTitle(title);
+		alert.setHeaderText(header);
+		alert.setContentText(body);
+
+		alert.showAndWait();
+	}
+	
+	public static void RunUi(RunOnUi runOnUi) {
+		Platform.runLater(new Runnable() {
+			@Override public void run() {
+				runOnUi.run();
+			}
+		});
 	}
 
 	public static boolean isFieldValid(String colName) {

@@ -1,10 +1,8 @@
 package controls;
 
 import adapter.base.ControlAdapter;
-import javafx.event.ActionEvent;
 import javafx.scene.control.Hyperlink;
 
-@SuppressWarnings({ "unchecked" })
 public class MfHyperlink extends ControlAdapter<String> {
 
 	private Hyperlink _control;
@@ -21,9 +19,7 @@ public class MfHyperlink extends ControlAdapter<String> {
 	protected void initialize() {
 		super.initialize();
 		_control.setOnAction((event) -> {
-			for (ControlEvent<ActionEvent> controlEvent: _events) {
-				controlEvent.handle(event);
-			}
+			runEvents(event);
 		});
 	}
 

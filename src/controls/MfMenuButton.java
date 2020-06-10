@@ -1,17 +1,17 @@
 package controls;
 
 import adapter.base.ControlAdapter;
-import javafx.scene.control.Button;
+import javafx.scene.control.MenuButton;
 
-public class MfButton extends ControlAdapter<String> {
+public class MfMenuButton extends ControlAdapter<String> {
 
-	private Button _control;
+	private MenuButton _control;
 
-	public MfButton(String title) {
-		setControl(_control = new Button(title));
+	public MfMenuButton(String title) {
+		setControl(_control = new MenuButton(title));
 	}
 
-	public MfButton(Button batton) {
+	public MfMenuButton(MenuButton batton) {
 		setControl(_control = batton);
 	}
 

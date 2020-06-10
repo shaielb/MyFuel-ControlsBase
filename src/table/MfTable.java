@@ -2,13 +2,15 @@ package table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import adapter.base.ControlAdapter;
 import db.interfaces.IEntity;
-import handler.ControlsHandler;
+import handler.UiHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -27,6 +29,8 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 
 	private ColumnEvent<TEntity> _onCellControlAction;
 
+	private Set<ControlAdapter> _controls = new HashSet<ControlAdapter>();
+
 	public MfTable(Class<TEntity> entityClass) throws Exception {
 		_entityClass = entityClass;
 		initialize(entityClass);
@@ -36,12 +40,13 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 		setAppearance();
 		_table.setItems(_tvObservableList);
 
-		Map<String, ControlAdapter> map = ControlsHandler.createEntityControls(_entityClass);
+		Map<String, ControlAdapter> map = UiHandler.createEntityControls(_entityClass);
 
 		List<TableColumn<TEntity, ?>> columns = new ArrayList<TableColumn<TEntity, ?>>();
 		for (Entry<String, ControlAdapter> entry : map.entrySet()) {
 			ControlAdapter control = entry.getValue();
-			columns.add(ControlsHandler.createColumn(control, (entity, eventControl) -> {
+			columns.add(UiHandler.createColumn(control, (entity, eventControl) -> {
+				_controls.add(control);
 				control.setEntity(entity);
 				_onCellControlAction.execute((TEntity) entity, eventControl);
 			}));
@@ -69,7 +74,7 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 	}
 
 	public void addColumn(ControlAdapter control, ColumnEvent<TEntity> event) {
-		addColumn(ControlsHandler.createColumn(control, event));
+		addColumn(UiHandler.createColumn(control, event));
 	}
 
 	public void addColumn(TableColumn<TEntity, ?> column) {
@@ -86,5 +91,9 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 
 	public Class<TEntity> getEntityClass() {
 		return _entityClass;
+	}
+
+	public void setEditable(Boolean editable) {
+		_table.setEditable(editable);
 	}
 }

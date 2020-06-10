@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import db.interfaces.IEntity;
-import handler.ControlsHandler;
+import handler.UiHandler;
 
 public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 
@@ -23,8 +23,8 @@ public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 		List<String> values = new ArrayList<String>();
 		values.add(NoSelection);
 		for (IEntity entity : _entities) {
-			ControlsHandler.iterateFields(entity.getClass(), (field, colName, index) -> {
-				if (colName.equals(colTitle)) {
+			UiHandler.iterateFields(entity.getClass(), (field, colName, index) -> {
+				if (colName.endsWith(colTitle)) {
 					try {
 						String value = (String) field.get(entity);
 						_entitiesValuesMap.put(value, entity);

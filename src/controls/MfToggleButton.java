@@ -1,11 +1,12 @@
 package controls;
 
 import adapter.base.ControlAdapter;
-import javafx.event.ActionEvent;
 import javafx.scene.control.ToggleButton;
 
-@SuppressWarnings({ "unchecked" })
-public class MfToggleButton extends ControlAdapter<Boolean> {
+public class MfToggleButton extends ControlAdapter<Object> {
+
+	// can be either IEnum or String
+	private Object _validValue;
 
 	private ToggleButton _control;
 
@@ -21,9 +22,14 @@ public class MfToggleButton extends ControlAdapter<Boolean> {
 	protected void initialize() {
 		super.initialize();
 		_control.setOnAction((event) -> {
-			for (ControlEvent<ActionEvent> controlEvent: _events) {
-				controlEvent.handle(event);
+			try {
+				Boolean newValue = getValue();
+				_field.set(_entity, _validValue == null ? newValue : (newValue ? _validValue : null));
+				runEvents(newValue);
+			} catch (IllegalArgumentException | IllegalAccessException e) {
+				e.printStackTrace();
 			}
+			runEvents(event);
 		});
 	}
 
@@ -33,13 +39,26 @@ public class MfToggleButton extends ControlAdapter<Boolean> {
 	public Boolean getValue() {
 		return _control.isSelected();
 	}
-	
+
 	@Override
-	public void setValue(Boolean value) {
-		_control.setSelected(value);
+	public void setValue(Object value) throws Exception {
+		if (value == null) {
+			_control.setSelected(false);
+		}
+		else {
+			Boolean val = (value instanceof Boolean) ? (Boolean) value : value.equals(_validValue);
+			if (val) {
+				super.setValue(val);
+			}
+			_control.setSelected(val);
+		}
 	}
 
 	public void setValue(String value) {
 		_control.setText(value);
+	}
+
+	public void setValidValue(Object validValue) {
+		_validValue = validValue;
 	}
 }
