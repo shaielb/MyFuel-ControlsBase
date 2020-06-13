@@ -18,15 +18,13 @@ public class MfTextField extends ControlAdapter<String> {
 	@Override
 	protected void initialize() {
 		super.initialize();
-		_control.focusedProperty().addListener((obs, oldVal, newVal) -> {
-			if (!newVal) {
-				try {
-					String nValue = getValue();
-					_field.set(_entity, nValue);
-					runEvents(nValue);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+		_control.textProperty().addListener((obs, oldVal, newVal) -> {
+			try {
+				String nValue = getValue();
+				_field.set(_entity, nValue);
+				runEvents(nValue);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
 		});
 		_control.setOnAction((event) -> {

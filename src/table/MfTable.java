@@ -2,6 +2,7 @@ package table;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +84,13 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 
 	public ObservableList<TEntity> getObservableList() {
 		return _tvObservableList;
+	}
+	
+	public void setRows(Collection<TEntity> rows) {
+		_tvObservableList.clear();
+		for (TEntity entity: rows) {
+			_tvObservableList.add(entity);
+		}
 	}
 
 	public void setOnCellControlAction(ColumnEvent<TEntity> onCellControlAction) {

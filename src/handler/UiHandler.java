@@ -210,12 +210,14 @@ public class UiHandler {
 	}
 	
 	public static void showAlert(AlertType at, String title, String header, String body) {
-		Alert alert = new Alert(at);
-		alert.setTitle(title);
-		alert.setHeaderText(header);
-		alert.setContentText(body);
+		UiHandler.RunUi(() -> {
+			Alert alert = new Alert(at);
+			alert.setTitle(title);
+			alert.setHeaderText(header);
+			alert.setContentText(body);
 
-		alert.showAndWait();
+			alert.showAndWait();
+		});
 	}
 	
 	public static void RunUi(RunOnUi runOnUi) {

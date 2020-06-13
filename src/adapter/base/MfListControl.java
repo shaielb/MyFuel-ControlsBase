@@ -8,16 +8,41 @@ import java.util.Map;
 import db.interfaces.IEntity;
 import handler.UiHandler;
 
+/**
+ * @author shaielb
+ *
+ * @param <TType>
+ */
 public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 
+	/**
+	 * 
+	 */
 	public static final String NoSelection = "-";
 	
+	/**
+	 * 
+	 */
 	private List<IEntity> _entities;
 	
+	/**
+	 * 
+	 */
 	protected Map<String, IEntity> _entitiesValuesMap = new HashMap<String, IEntity>();
+	/**
+	 * 
+	 */
 	protected Map<Integer, IEntity> _entitiesIdsMap = new HashMap<Integer, IEntity>();
+	/**
+	 * 
+	 */
 	protected Map<Integer, String> _entitiesIdsValuesMap = new HashMap<Integer, String>();
 
+	/**
+	 * @param entities
+	 * @param colTitle
+	 * @throws Exception
+	 */
 	public void setEntities(List<IEntity> entities, String colTitle) throws Exception {
 		_entities = entities;
 		List<String> values = new ArrayList<String>();
@@ -40,5 +65,8 @@ public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 		setValues(values);
 	}
 
+	/**
+	 * @param values
+	 */
 	protected abstract void setValues(List<String> values);
 }
