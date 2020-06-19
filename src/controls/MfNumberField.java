@@ -4,11 +4,11 @@ import adapter.base.ControlAdapter;
 import db.interfaces.IEntity;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Region;
+import javafx.scene.text.Text;
+import utilities.StringUtil;
 
 public class MfNumberField extends ControlAdapter<Number> {
 
@@ -16,7 +16,10 @@ public class MfNumberField extends ControlAdapter<Number> {
 		Number cast();
 	}
 
-	private Label _infoLbl = new Label();
+	private Text _errorLabel;
+	
+	private Text _infoLbl = new Text();
+	
 	private BorderPane _wrapper = new BorderPane();
 
 	private TextField _control;
@@ -25,8 +28,16 @@ public class MfNumberField extends ControlAdapter<Number> {
 
 	private Cast _cast;
 
+	private boolean _useWrapper = false;
+
 	public MfNumberField(Class<?> numberType) {
 		_numberType = numberType;
+		setControl(_control = new TextField());
+	}
+
+	public MfNumberField(Class<?> numberType, boolean useWrapper) {
+		_numberType = numberType;
+		_useWrapper = useWrapper;
 		setControl(_control = new TextField());
 	}
 
@@ -41,29 +52,40 @@ public class MfNumberField extends ControlAdapter<Number> {
 		establishType(_numberType);
 		_infoLbl.setId("error-label");
 		_infoLbl.setText("Only Numbers Please");
+		_infoLbl.setStyle("-fx-prompt-text-fill: red");
 
-		_wrapper.setCenter(_control);
+		if (_useWrapper) {
+			_wrapper.setCenter(_control);
+		}
 		_control.textProperty().addListener(new ChangeListener<String>() {
-		    @Override
-		    public void changed(ObservableValue<? extends String> observable, 
-		    		String oldValue, String newValue) {
-		        if (!newValue.matches("\\d*")) {
-		        	_control.setText(newValue.replaceAll("[^\\d]", ""));
-		        	ObservableList<String> styleClass = _control.getStyleClass();
-					if (!styleClass.contains("error")) {
-						styleClass.add("error");
+			@Override
+			public void changed(ObservableValue<? extends String> observable, 
+					String oldValue, String newValue) {
+				if (!newValue.matches("\\d*(\\.\\d*)?")) {
+					_control.setText(newValue.replaceAll("[^\\d\\.]", ""));
+					if (_useWrapper) {
 						_wrapper.setTop(_infoLbl);
 					}
-		        }
-		        else {
-		        	ObservableList<String> styleClass = _control.getStyleClass();
-					if (styleClass.contains("error")) {
-						styleClass.remove("error");
+					if (_errorLabel != null) {
+						_errorLabel.setVisible(true);
+					}
+				}
+				else {
+					if (_useWrapper) {
 						_wrapper.setTop(null);
 					}
+					if (_errorLabel != null) {
+						_errorLabel.setVisible(false);
+					}
+					try {
+						Number value = getValue();
+						_field.set(_entity, value);
+					} catch (IllegalArgumentException | IllegalAccessException e) {
+						e.printStackTrace();
+					}
 					runEvents(newValue);
-		        }
-		    }
+				}
+			}
 		});
 	}
 
@@ -80,15 +102,27 @@ public class MfNumberField extends ControlAdapter<Number> {
 	}
 
 	private Number castInteger() {
-		return Integer.parseInt(_control.getText());
+		String text = _control.getText();
+		if (StringUtil.isEmpty(text)) {
+			text = "0";
+		}
+		return Integer.parseInt(text);
 	}
 
 	private Number castDouble() {
-		return Double.parseDouble(_control.getText());
+		String text = _control.getText();
+		if (StringUtil.isEmpty(text)) {
+			text = "0";
+		}
+		return Double.parseDouble(text);
 	}
 
 	private Number castFloat() {
-		return Float.parseFloat(_control.getText());
+		String text = _control.getText();
+		if (StringUtil.isEmpty(text)) {
+			text = "0";
+		}
+		return Float.parseFloat(text);
 	}
 
 	@Override
@@ -115,7 +149,18 @@ public class MfNumberField extends ControlAdapter<Number> {
 
 	@Override
 	public void setValue(Number value) throws Exception {
+		_control.setText((value == null) ? "" : value.toString());
+		if (value == null) {
+			value = 0;
+		}
 		super.setValue(value);
-		_control.setText(value.toString());
+	}
+
+	public void setUseWrapper(boolean useWrapper) {
+		_useWrapper = useWrapper;
+	}
+	
+	public void setErrorLabel(Text text) {
+		_errorLabel = text;
 	}
 }

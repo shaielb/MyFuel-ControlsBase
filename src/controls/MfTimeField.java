@@ -34,20 +34,22 @@ public class MfTimeField extends ControlAdapter<String> {
 		    public void changed(ObservableValue<? extends String> observable, 
 		    		String oldValue, String newValue) {
 		    	String validTime = "^[12]\\d\\:[0-5]\\d\\:[0-5]\\d";
-		        if (!newValue.matches(validTime)) {
-		        	ObservableList<String> styleClass = _control.getStyleClass();
-					if (!styleClass.contains("error")) {
-						styleClass.add("error");
-						_wrapper.setTop(_infoLbl);
-					}
-		        }
-		        else {
-		        	ObservableList<String> styleClass = _control.getStyleClass();
-					if (styleClass.contains("error")) {
-						styleClass.remove("error");
-						_wrapper.setTop(null);
-					}
-		        }
+		    	if (newValue != null) {
+			        if (!newValue.matches(validTime)) {
+			        	ObservableList<String> styleClass = _control.getStyleClass();
+						if (!styleClass.contains("error")) {
+							styleClass.add("error");
+							_wrapper.setTop(_infoLbl);
+						}
+			        }
+			        else {
+			        	ObservableList<String> styleClass = _control.getStyleClass();
+						if (styleClass.contains("error")) {
+							styleClass.remove("error");
+							_wrapper.setTop(null);
+						}
+			        }
+		    	}
 		        runEvents(newValue);
 		    }
 		});
@@ -58,7 +60,7 @@ public class MfTimeField extends ControlAdapter<String> {
 
 	@Override
 	public void clear() throws Exception {
-		_field.set(_entity, "");
+		_field.set(_entity, null);
 	}
 
 	@Override

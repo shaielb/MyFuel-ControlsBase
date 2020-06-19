@@ -1,7 +1,6 @@
 package controls;
 
 import adapter.base.ControlAdapter;
-import db.interfaces.IEnum;
 import javafx.scene.control.CheckBox;
 
 public class MfCheckBox extends ControlAdapter<Object> {
@@ -25,7 +24,9 @@ public class MfCheckBox extends ControlAdapter<Object> {
 		_control.setOnAction((event) -> {
 			try {
 				Boolean newValue = getValue();
-				_field.set(_entity, _validValue == null ? newValue : (newValue ? _validValue : null));
+				if (_entity != null && _field != null) {
+					_field.set(_entity, _validValue == null ? newValue : (newValue ? _validValue : null));
+				}
 				runEvents(newValue);
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();

@@ -23,7 +23,7 @@ public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 	/**
 	 * 
 	 */
-	private List<IEntity> _entities;
+	private List<? extends IEntity> _entities;
 	
 	/**
 	 * 
@@ -43,7 +43,7 @@ public abstract class MfListControl<TType> extends ControlAdapter<TType> {
 	 * @param colTitle
 	 * @throws Exception
 	 */
-	public void setEntities(List<IEntity> entities, String colTitle) throws Exception {
+	public void setEntities(List<? extends IEntity> entities, String colTitle) throws Exception {
 		_entities = entities;
 		List<String> values = new ArrayList<String>();
 		values.add(NoSelection);

@@ -3,7 +3,7 @@ package controls;
 import adapter.base.ControlAdapter;
 import javafx.scene.text.Text;
 
-public class MfText extends ControlAdapter<String> {
+public class MfText extends ControlAdapter<Object> {
 
 	private Text _control;
 
@@ -26,12 +26,15 @@ public class MfText extends ControlAdapter<String> {
 	}
 
 	@Override
-	public String getValue() {
+	public Object getValue() {
 		return _control.getText();
 	}
 
 	@Override
-	public void setValue(String value) throws Exception {
-		_control.setText(value);
+	public void setValue(Object value) throws Exception {
+		if (value != null) {
+			super.setValue(value);
+			_control.setText(value.toString());
+		}
 	}
 }

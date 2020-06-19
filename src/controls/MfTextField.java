@@ -31,6 +31,18 @@ public class MfTextField extends ControlAdapter<String> {
 			runEvents(event);
 		});
 	}
+	
+	/**
+	 * @throws Exception
+	 */
+	public void update() throws Exception {
+		if (_field != null && _entity != null) {
+			Object value = _field.get(_entity);
+			if (value != null) {
+				_control.setText(value.toString());
+			}
+		}
+	}
 
 	@Override
 	public void clear() throws Exception {

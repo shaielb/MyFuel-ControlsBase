@@ -1,12 +1,13 @@
 package controls;
 
+import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 
 import adapter.base.ControlAdapter;
 import javafx.scene.control.DatePicker;
 
-public class MfDatePicker extends ControlAdapter<LocalDate> {
+public class MfDatePicker extends ControlAdapter<Timestamp> {
 
 	private DatePicker _control;
 
@@ -23,7 +24,7 @@ public class MfDatePicker extends ControlAdapter<LocalDate> {
 		super.initialize();
 		_control.setOnAction((event) -> {
 			try {
-				LocalDate date = getValue();
+				Timestamp date = getValue();
 				_field.set(_entity, date);
 				runEvents(date);
 			} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -39,13 +40,13 @@ public class MfDatePicker extends ControlAdapter<LocalDate> {
 	}
 
 	@Override
-	public LocalDate getValue() {
-		return _control.getValue();
+	public Timestamp getValue() {
+		return Timestamp.valueOf(_control.getValue().atStartOfDay());
 	}
 
 	@Override
-	public void setValue(LocalDate value) throws Exception {
+	public void setValue(Timestamp value) throws Exception {
 		super.setValue(value);
-		_control.setValue(value);
+		_control.setValue(value.toLocalDateTime().toLocalDate());
 	}
 }

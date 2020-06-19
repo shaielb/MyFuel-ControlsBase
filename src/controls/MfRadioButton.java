@@ -24,7 +24,9 @@ public class MfRadioButton extends ControlAdapter<Object> {
 		_control.setOnAction((event) -> {
 			try {
 				Boolean newValue = getValue();
-				_field.set(_entity, _validValue == null ? newValue : (newValue ? _validValue : null));
+				if (_entity != null && _field != null) {
+					_field.set(_entity, _validValue == null ? newValue : (newValue ? _validValue : null));
+				}
 				runEvents(newValue);
 			} catch (IllegalArgumentException | IllegalAccessException e) {
 				e.printStackTrace();

@@ -3,16 +3,20 @@ package controls;
 import adapter.base.ControlAdapter;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.text.Text;
 
 public class MfEmailField extends ControlAdapter<String> {
 
+	private Text _errorLabel;
+
 	private Label _infoLbl = new Label();
 	private BorderPane _wrapper = new BorderPane();
-	
+
+	private boolean _useWrapper = false;
+
 	private TextField _control;
 
 	public MfEmailField() {
@@ -28,28 +32,42 @@ public class MfEmailField extends ControlAdapter<String> {
 		super.initialize();
 		_infoLbl.setId("error-label");
 		_infoLbl.setText("Only Numbers Please");
-		
-		_control.textProperty().addListener(new ChangeListener<String>() {
-		    @Override
-		    public void changed(ObservableValue<? extends String> observable, 
-		    		String oldValue, String newValue) {
-		    	String validEmail = "^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$";
-		        if (!newValue.matches(validEmail)) {
-		        	ObservableList<String> styleClass = _control.getStyleClass();
-					if (!styleClass.contains("error")) {
-						styleClass.add("error");
-						_wrapper.setTop(_infoLbl);
+
+		if (_useWrapper) {
+			_wrapper.setCenter(_control);
+		}
+
+		_control.focusedProperty().addListener(new ChangeListener<Boolean>() {
+			@Override
+			public void changed(ObservableValue<? extends Boolean> observable, 
+					Boolean oldValue, Boolean newValue) {
+				String validEmail = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$";
+				if (oldValue) {
+					String value = getValue();
+					if (!value.matches(validEmail)) {
+						if (_useWrapper) {
+							_wrapper.setTop(_infoLbl);
+						}
+						if (_errorLabel != null) {
+							_errorLabel.setVisible(true);
+						}
 					}
-		        }
-		        else {
-		        	ObservableList<String> styleClass = _control.getStyleClass();
-					if (styleClass.contains("error")) {
-						styleClass.remove("error");
-						_wrapper.setTop(null);
+					else {
+						if (_useWrapper) {
+							_wrapper.setTop(null);
+						}
+						if (_errorLabel != null) {
+							_errorLabel.setVisible(false);
+						}
+						try {
+							_field.set(_entity, value);
+						} catch (IllegalArgumentException | IllegalAccessException e) {
+							e.printStackTrace();
+						}
+						runEvents(newValue);
 					}
-		        }
-		        runEvents(newValue);
-		    }
+				}
+			}
 		});
 		_control.setOnAction((event) -> {
 			runEvents(event);
@@ -70,5 +88,13 @@ public class MfEmailField extends ControlAdapter<String> {
 	public void setValue(String value) throws Exception {
 		super.setValue(value);
 		_control.setText(value);
+	}
+
+	public void setUseWrapper(boolean useWrapper) {
+		_useWrapper = useWrapper;
+	}
+
+	public void setErrorLabel(Text text) {
+		_errorLabel = text;
 	}
 }

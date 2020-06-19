@@ -14,6 +14,8 @@ import db.interfaces.IEntity;
 import handler.UiHandler;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.geometry.Insets;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
@@ -37,20 +39,46 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 		initialize(entityClass);
 	}
 
+	public MfTable(Class<TEntity> entityClass, boolean editable) throws Exception {
+		_entityClass = entityClass;
+		_table.setEditable(editable);
+		initialize(entityClass);
+	}
+
 	public void initialize(Class<TEntity> entityClass) throws Exception {
 		setAppearance();
-		_table.setItems(_tvObservableList);
+		SortedList  sortableData = new SortedList<>(_tvObservableList);
+		_table.setItems(_tvObservableList);//sortableData);
+		sortableData.comparatorProperty().bind(_table.comparatorProperty());
 
 		Map<String, ControlAdapter> map = UiHandler.createEntityControls(_entityClass);
+		/*if (!_table.isEditable()) {
+			for (Entry<String, ControlAdapter> entry : map.entrySet()) {
+				ControlAdapter control = entry.getValue();
+				MfText text = new MfText();
+				text.setColumnName(control.getColumnName());
+				text.setValue(control.getValue());
+				text.setField(control.getField());
+				entry.setValue(text);
+			}
+		}*/
 
 		List<TableColumn<TEntity, ?>> columns = new ArrayList<TableColumn<TEntity, ?>>();
 		for (Entry<String, ControlAdapter> entry : map.entrySet()) {
 			ControlAdapter control = entry.getValue();
-			columns.add(UiHandler.createColumn(control, (entity, eventControl) -> {
+			TableColumn tc = UiHandler.createColumn(control, (entity, eventControl) -> {
+				if (!_table.isEditable()) {
+					control.getInstance().setDisable(true);
+				}
 				_controls.add(control);
 				control.setEntity(entity);
-				_onCellControlAction.execute((TEntity) entity, eventControl);
-			}));
+				if (_onCellControlAction != null) {
+					_onCellControlAction.execute((TEntity) entity, eventControl);
+				}
+			});
+			columns.add(tc);
+			//tc.setSortable(true);
+			//_table.getSortOrder().add(tc);
 		}
 		placeControls(columns.toArray(new TableColumn[columns.size()]));
 	}
@@ -61,7 +89,7 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 		_table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 		_table.setPrefWidth(600);
 		_table.setPrefHeight(600);
-		_table.setEditable(true);
+		//_table.setEditable(true);
 	}
 
 	private void placeControls(TableColumn<TEntity, ?>[] columns) throws Exception {
@@ -82,14 +110,25 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 		_table.getColumns().add(column);
 	}
 
+	public void addColumn(int index, TableColumn<TEntity, ?> column) {
+		_table.getColumns().add(index, column);
+	}
+
 	public ObservableList<TEntity> getObservableList() {
 		return _tvObservableList;
 	}
-	
+
 	public void setRows(Collection<TEntity> rows) {
 		_tvObservableList.clear();
 		for (TEntity entity: rows) {
 			_tvObservableList.add(entity);
+		}
+	}
+
+	public void setEntities(Collection<IEntity> rows) {
+		_tvObservableList.clear();
+		for (IEntity entity: rows) {
+			_tvObservableList.add((TEntity) entity);
 		}
 	}
 
@@ -103,5 +142,14 @@ public class MfTable<TEntity extends IEntity> extends BorderPane {
 
 	public void setEditable(Boolean editable) {
 		_table.setEditable(editable);
+	}
+
+	public void update() {
+		List<TEntity> list = new ArrayList<TEntity>();
+		list.addAll(_tvObservableList);
+		_tvObservableList.clear();
+		for (IEntity entity: list) {
+			_tvObservableList.add((TEntity) entity);
+		}
 	}
 }

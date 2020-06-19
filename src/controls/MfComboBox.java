@@ -7,13 +7,13 @@ import db.interfaces.IEntity;
 import javafx.scene.control.ComboBox;
 
 public class MfComboBox extends MfListControl<Object> {
-	
+
 	private ComboBox<String> _control;
 
 	public MfComboBox() {
 		setControl(_control = new ComboBox<String>());
 	}
-	
+
 	public MfComboBox(ComboBox<String> cmb) {
 		setControl(_control = cmb);
 	}
@@ -22,21 +22,26 @@ public class MfComboBox extends MfListControl<Object> {
 	protected void initialize() {
 		super.initialize();
 		_control.setOnAction((event) -> {
-					try {
-						_field.set(_entity, _entitiesValuesMap.get(getValue()));
-						runEvents(getValue());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-					runEvents(event);
-				});
+			try {
+				if (_entitiesValuesMap != null && _entitiesValuesMap.size() > 0) {
+					_field.set(_entity, _entitiesValuesMap.get(getValue()));
+				}
+				else {
+					_field.set(_entity, getValue());
+				}
+				runEvents(getValue());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			runEvents(event);
+		});
 	}
-	
+
 	private void setSelectedItem(IEntity entity) throws Exception {
 		_control.setValue((entity == null) ? "" : _entitiesIdsValuesMap.get(entity.getId()));
 		_field.set(_entity, entity);
 	}
-	
+
 	@Override
 	public void clear() throws Exception {
 		_control.setValue(NoSelection);
@@ -45,6 +50,9 @@ public class MfComboBox extends MfListControl<Object> {
 
 	@Override
 	public Object getValue() {
+		if (_entitiesValuesMap != null && _entitiesValuesMap.size() > 0) {
+			return _entitiesValuesMap.get(_control.getValue());
+		}
 		return _control.getValue();
 	}
 

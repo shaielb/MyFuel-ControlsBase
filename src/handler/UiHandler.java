@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import adapter.base.ControlAdapter;
 
@@ -59,7 +60,7 @@ public class UiHandler {
 	
 	public static <TEntity extends IEntity> TableColumn createColumn(ControlAdapter control, ColumnEvent<TEntity> ce) {
 		Field field = control.getField();
-		return createColumn(control, () -> { return UiHandler.createControl(field); }, ce);
+		return createColumn(control, () -> { return UiHandler.createControl(field, true); }, ce);
 	}
 
 	public static <TEntity extends IEntity> TableColumn createColumn(ControlAdapter control, ControlInstantiator instantiator, ColumnEvent<TEntity> ce) {
@@ -73,8 +74,10 @@ public class UiHandler {
 					Object newValue = cd.getValue();
 					TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
 					try {
-						control.getField().set(entity, newValue);
-						ce.execute(entity, control);
+						if (cd.getField() != null) {
+							cd.getField().set(entity, newValue);
+						}
+						ce.execute(entity, cd);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -86,21 +89,14 @@ public class UiHandler {
 		return column;
 	}
 
-	public static <TEntity extends IEntity> TableColumn createButtonColumn(ButtonTitle bt, String title, ColumnEvent<TEntity> ce) {
+	public static <TEntity extends IEntity> TableColumn createButtonColumn(String buttonTitle, String title, ColumnEvent<TEntity> ce) {
 		MfTableCol<TEntity, ?> column = new MfTableCol<TEntity, String>(title);
 		column.setCi((getIndex) -> {
-			String btnTitle = title;
-			if (bt != null) {
-				TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
-				btnTitle = bt.set(entity);
-			}
-			MfButton button = new MfButton(btnTitle);
+			MfButton button = new MfButton(buttonTitle);
 			{
 				button.addEvent((event) -> {
-					Object newValue = button.getValue();
 					TEntity entity = column.getTableView().getItems().get(getIndex.getIndex());
 					try {
-						button.getField().set(entity, newValue);
 						ce.execute(entity, button);
 					} catch (Exception e) {
 						e.printStackTrace();
@@ -111,12 +107,12 @@ public class UiHandler {
 		});
 		return column;
 	}
-
-	public static <TEntity extends IEntity> TableColumn createButtonColumn(String title, ColumnEvent<TEntity> ce) {
-		return createButtonColumn(null, title, ce);
+	
+	public static <TEntity extends IEntity> ControlAdapter createControl(Field field) throws Exception {
+		return createControl(field, false);
 	}
 
-	public static <TEntity extends IEntity> ControlAdapter createControl(Field field) throws Exception {
+	public static <TEntity extends IEntity> ControlAdapter createControl(Field field, boolean useWrapper) throws Exception {
 		Class<?> classType = field.getType();
 		String colName = field.getAnnotation(Column.class).Name();
 		ControlAdapter control = null;
@@ -124,7 +120,7 @@ public class UiHandler {
 			control = new MfCheckBox();
 		}
 		else if (Number.class.isAssignableFrom(classType)) {
-			control = new MfNumberField(classType);
+			control = new MfNumberField(classType, useWrapper);
 		}
 		else if (String.class.isAssignableFrom(classType)) {
 			control = new MfTextField();
@@ -209,15 +205,30 @@ public class UiHandler {
 		}
 	}
 	
-	public static void showAlert(AlertType at, String title, String header, String body) {
+	public static void clone(IEntity from, IEntity to) {
+		try {
+			iterateFields(from.getClass(), (field, colName, index) -> {
+				field.set(to, field.get(from));
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean showAlert(AlertType at, String title, String header, String body) {
+		Boolean[] result = new Boolean[] { true };
 		UiHandler.RunUi(() -> {
 			Alert alert = new Alert(at);
 			alert.setTitle(title);
 			alert.setHeaderText(header);
 			alert.setContentText(body);
 
-			alert.showAndWait();
+			Optional option = alert.showAndWait();
+			if (option == null) {
+				result[0] = false;
+			}
 		});
+		return result[0];
 	}
 	
 	public static void RunUi(RunOnUi runOnUi) {
